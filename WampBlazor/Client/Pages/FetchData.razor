@@ -1,0 +1,54 @@
+@page "/fetchdata"
+@using WampBlazor.Shared
+@using WampBlazor.Shared.Services
+@using WampSharp.V2
+@inject NavigationManager NavigationManager
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<WeatherForecast> forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var serverAddress = "ws://127.0.0.1:5000/ws";
+        var factory = new DefaultWampChannelFactory();
+        var channel = factory.CreateJsonChannel(serverAddress, "realm1");
+        await channel.Open().ConfigureAwait(false);
+
+        var proxy = channel.RealmProxy.Services.GetCalleeProxy<IWeatherForecastService>();
+        forecasts = await proxy.Get();
+    }
+
+}
