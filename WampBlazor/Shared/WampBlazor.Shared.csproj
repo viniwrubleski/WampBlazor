@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WampSharp" Version="20.1.1" />
+    <PackageReference Include="WampSharp" Version="21.0.0-blazor-23" />
   </ItemGroup>
 
 </Project>

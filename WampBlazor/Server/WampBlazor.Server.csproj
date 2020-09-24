@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
-    <PackageReference Include="WampSharp.AspNetCore.WebSockets.Server" Version="20.1.1" />
-    <PackageReference Include="WampSharp.NewtonsoftJson" Version="20.1.1" />
+    <PackageReference Include="WampSharp.AspNetCore.WebSockets.Server" Version="21.0.0-blazor-23" />
+    <PackageReference Include="WampSharp.NewtonsoftJson" Version="21.0.0-blazor-23" />
   </ItemGroup>
 
   <ItemGroup>
