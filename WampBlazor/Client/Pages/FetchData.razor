@@ -37,18 +37,61 @@ else
     </table>
 }
 
+<pre>
+IsConnected: @isConnected
+SessionId: @sessionId
+Error: @error
+</pre>
+
 @code {
     private IEnumerable<WeatherForecast> forecasts;
+
+    private bool isConnected;
+
+    private long sessionId;
+
+    private string error;
 
     protected override async Task OnInitializedAsync()
     {
         var serverAddress = "ws://127.0.0.1:5000/ws";
         var factory = new DefaultWampChannelFactory();
         var channel = factory.CreateJsonChannel(serverAddress, "realm1");
-        await channel.Open().ConfigureAwait(false);
 
-        var proxy = channel.RealmProxy.Services.GetCalleeProxy<IWeatherForecastService>();
-        forecasts = await proxy.Get();
+        channel.RealmProxy.Monitor.ConnectionEstablished += (sender, e) =>
+        {
+            isConnected = true;
+            sessionId = e.SessionId;
+            StateHasChanged();
+        };
+        channel.RealmProxy.Monitor.ConnectionBroken += (sender, e) =>
+        {
+            isConnected = false;
+            sessionId = 0;
+            error = $"ConnectionBroken: {e.Reason}";
+            StateHasChanged();
+        };
+        channel.RealmProxy.Monitor.ConnectionError += (sender, e) =>
+        {
+            isConnected = false;
+            sessionId = 0;
+            error = $"ConnectionError: {e.Exception.Message}";
+            StateHasChanged();
+        };
+
+        Func<Task> connect = async () =>
+        {
+            await channel.Open().ConfigureAwait(false);
+
+            var proxy = channel.RealmProxy.Services.GetCalleeProxy<IWeatherForecastService>();
+            forecasts = await proxy.Get();
+            StateHasChanged();
+        };
+
+        var reconnector = new WampChannelReconnector(channel, connect);
+        reconnector.Start();
+
+        await Task.Yield();
     }
 
 }
